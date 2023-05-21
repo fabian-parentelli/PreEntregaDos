@@ -5,10 +5,6 @@ import viewRouter from './routes/views.router.js';
 import mongoose from "mongoose";
 import Handlebars from 'express-handlebars';
 import __dirname from './utils.js';
-import { Server } from 'socket.io';
-import Messages from "./dao/dbManager/message.dbmanager.js";
-
-const messageManager = new Messages();
 
 const app = express();
 
@@ -35,24 +31,4 @@ try {
 };
 
 
-const server = app.listen(8080, () => console.log('Server runing in port 8080'));
-const io = new Server(server);
-
-const arrayData = []
-io.on('connection', socket => {
-    console.log('Nuevo cliente conectado');
-
-    socket.on('message', async data => {
-        const messages = await messageManager.addMensagger(data);
-        arrayData.push(messages);
-        io.emit('messagesLogs', arrayData);
-    });
-
-    socket.on('authenticated', async data => {
-        const messages = await messageManager.getMessage();
-        socket.emit('messagesLogs', messages);
-        console.log(messages);
-
-        socket.broadcast.emit('newUserConnected', data);
-    });
-});
+app.listen(8080, () => console.log('Server runing in port 8080'));

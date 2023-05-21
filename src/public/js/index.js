@@ -1,47 +1,21 @@
-const socket = io();
+const products = document.querySelector('.products');
+products.addEventListener('click', addToCart);
 
-let user;
-const chatBox = document.getElementById('chatBox');
+async function addToCart(e) {
+    if (e.target.classList.contains('btn')) {
+        const btn = e.target.parentElement;
+        const pid = btn.querySelector("button").getAttribute("data-id");
+        const title = btn.querySelector('h2').textContent;
 
-swal.fire({
-    title: 'Identificate',
-    input: 'text',
-    text: 'Ingresa el usuario para identificarte en el caht',
-    inputValidator: (value) => {
-        return !value && "Necesitas escribir un nombre de usuario"
-    },
-    allowOutsideClick: false,
-    allowEscapeKey: false
-}).then(result => {
-    user = result.value;
-    socket.emit('authenticated', user);
-});
+        const result = await fetch(`/api/carts/646a5540f86461c4696f9667/products/${pid}`, { method: "POST" });
+        const message = await result.json();
 
-chatBox.addEventListener('keyup', evt => {
-    if(evt.key === 'Enter') {
-        if(chatBox.value.trim().length > 0) {
-            socket.emit('message', {user, message: chatBox.value});
-            chatBox.value = "";
+        if (message) {
+            Swal.fire({
+                text: `The product ${title} was added to the cart`,
+                toast: true,
+                position: "top-right",
+            });
         };
     };
-});
-
-socket.on('messagesLogs', data => {
-    let log = document.getElementById('messageLogs');
-    let messages
-    data.forEach(message => {
-        messages += `${message.user} dice: ${message.message}<br/>`;
-    });
-    log.innerHTML = messages;
-});
-
-socket.on('newUserConnected', data => {
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        title: `${data} se ha unido al chat`,
-        icon: 'succes'
-    });
-});
+};
